@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\LineLoginController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,3 +16,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('welcome'));
 Route::get('/sample', fn () => view('sample'));
+
+Route::get('/login', fn () => view('login'));
+
+// 2行追加
+Route::get('/linelogin', [LineLoginController::class, 'linelogin'])->name('linelogin');
+Route::get('/callback', [LineLoginController::class, 'callback'])->name('callback');
