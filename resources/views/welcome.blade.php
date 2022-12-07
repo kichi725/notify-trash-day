@@ -8,6 +8,8 @@
 </head>
 <body>
     <h2>LINE Lognn</h2>
-    <a href="{{route('linelogin')}}">LINEログイン</a>
+
+    <a href="{{ route('line.login') }}">LINEログイン</a>
+
 </body>
 </html>

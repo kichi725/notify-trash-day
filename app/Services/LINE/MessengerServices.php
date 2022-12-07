@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\LINE;
 
 use LINE\LINEBot;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 
-class ReplyServices
+class MessengerServices
 {
     public function message(array $inputs): void
     {
@@ -20,12 +22,12 @@ class ReplyServices
 
         // LINEBOTSDKの設定
         $http_client = new CurlHTTPClient(config('services.line.channel_token'));
-        $bot = new LINEBot($http_client, ['channelSecret' => config('services.line.messenger_secret')]);
+        $bot         = new LINEBot($http_client, ['channelSecret' => config('services.line.messenger_secret')]);
 
         if ($request_message === 'store') {
             $quick_reply_messages = [
-                'type' => 'text',
-                'text' => '燃えるゴミの日を登録してください。',
+                'type'       => 'text',
+                'text'       => '燃えるゴミの日を登録してください。',
                 'quickReply' => [
                     'items' => [
                         [
@@ -90,15 +92,15 @@ class ReplyServices
 
             // クイックリプライ
             $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\RawMessageBuilder($quick_reply_messages);
-            $response = $bot->replyMessage($reply_token, $textMessageBuilder);
+            $response           = $bot->replyMessage($reply_token, $textMessageBuilder);
         }
         if ($request_message === 'index') {
             $reply_message = "ご登録頂いた日時です。\n月曜日: なし\n火曜日: 燃えるごみ";
-            $reply=$bot->replyText($reply_token, $reply_message);
+            $reply         =$bot->replyText($reply_token, $reply_message);
         }
         if ($request_message === 'update') {
             $reply_message = 'どの曜日を変更しますか？';
-            $reply=$bot->replyText($reply_token, $reply_message);
+            $reply         =$bot->replyText($reply_token, $reply_message);
         }
     }
 }

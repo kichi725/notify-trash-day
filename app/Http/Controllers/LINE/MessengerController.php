@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Line;
+declare(strict_types=1);
+
+namespace App\Http\Controllers\LINE;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -8,14 +10,15 @@ use LINE\LINEBot;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
 
-class LineMessengerController extends Controller
+class MessengerController extends Controller
 {
-    public function __construct(
-        // private \App\Repositories\LINE\LineMessengerRepositoryInterface $line
-        private \App\Services\LINE\ReplyServices $line
-    ) {}
+    public function __construct(private \App\Services\LINE\MessengerServices $line)
+    {
+    }
 
     /**
+     * メッセージ受信
+     *
      * @param \Illuminate\Http\Request $request
      * @return boolean
      */
@@ -29,11 +32,11 @@ class LineMessengerController extends Controller
     // メッセージ送信用
     public function message()
     {
-        $token = config('services.line.channel_token');
+        $token  = config('services.line.channel_token');
         $secret = config('services.line.messenger_secret');
         // LINEBOTSDKの設定
         $http_client = new CurlHTTPClient($token);
-        $bot = new LINEBot($http_client, ['channelSecret' => $secret]);
+        $bot         = new LINEBot($http_client, ['channelSecret' => $secret]);
 
         $user = \App\Models\User::find(2);
 
@@ -42,24 +45,24 @@ class LineMessengerController extends Controller
         $userId = $user->line_id;
 
         // メッセージ設定
-        $message = 'おはようございます。今日は燃えるゴミの日です。';
+        $message              = 'おはようございます。今日は燃えるゴミの日です。';
         $quick_reply_messages = [
-            'type' => 'text',
-            'text' => '燃えるゴミの日を登録してください。',
+            'type'       => 'text',
+            'text'       => '燃えるゴミの日を登録してください。',
             'quickReply' => [
                 'items' => [
                     [
-                        'type' => 'action',
+                        'type'   => 'action',
                         'action' => [
-                            'type' => 'message',
+                            'type'  => 'message',
                             'label' => 'Monday',
-                            'text' => '月曜日',
+                            'text'  => '月曜日',
                         ],
-                        'type' => 'action',
+                        'type'   => 'action',
                         'action' => [
-                            'type' => 'message',
+                            'type'  => 'message',
                             'label' => '火曜日',
-                            'text' => 'Tuesday',
+                            'text'  => 'Tuesday',
                         ],
                     ]
                 ],

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
@@ -30,12 +32,12 @@ class SendLineMessages extends Command
      */
     public function handle(): int
     {
-        $token = config('services.line.channel_token');
+        $token  = config('services.line.channel_token');
         $secret = config('services.line.messenger_secret');
 
         // LINEBOTSDKの設定
         $http_client = new CurlHTTPClient($token);
-        $bot = new LINEBot($http_client, ['channelSecret' => $secret]);
+        $bot         = new LINEBot($http_client, ['channelSecret' => $secret]);
 
         $user = \App\Models\User::find(2);
 
@@ -47,7 +49,7 @@ class SendLineMessages extends Command
 
         // メッセージ送信（マルチキャスト）
         $textMessageBuilder = new TextMessageBuilder($message);
-        $response = $bot->multicast($userId, $textMessageBuilder);
+        $response           = $bot->multicast($userId, $textMessageBuilder);
 
         return Command::SUCCESS;
     }
