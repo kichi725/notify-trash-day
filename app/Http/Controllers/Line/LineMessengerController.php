@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Line;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use LINE\LINEBot;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
@@ -11,34 +10,19 @@ use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
 
 class LineMessengerController extends Controller
 {
-    public function webhook(Request $request)
+    public function __construct(
+        // private \App\Repositories\LINE\LineMessengerRepositoryInterface $line
+        private \App\Services\LINE\ReplyServices $line
+    ) {}
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return boolean
+     */
+    public function webhook(Request $request): bool
     {
-        // LINEから送られた内容を$inputsに代入
-        $inputs=$request->all();
+        $this->line->message($request->events);
 
-        info('request', $inputs);
-
-        // // そこからtypeをとりだし、$message_typeに代入
-        // $message_type=$inputs['events'][0]['type'];
-
-        // // メッセージが送られた場合、$message_typeは'message'となる。その場合処理実行。
-        // if($message_type=='message') {
-
-        //     // replyTokenを取得
-        //     $reply_token=$inputs['events'][0]['replyToken'];
-
-        //     // LINEBOTSDKの設定
-        //     $http_client = new CurlHTTPClient(config('services.line.channel_token'));
-        //     $bot = new LINEBot($http_client, ['channelSecret' => config('services.line.messenger_secret')]);
-
-        //     // 送信するメッセージの設定
-        //     $reply_message='メッセージありがとうございます';
-
-        //     // ユーザーにメッセージを返す
-        //     $reply=$bot->replyText($reply_token, $reply_message);
-
-        //     return 'ok';
-        // }
         return true;
     }
 
@@ -55,15 +39,41 @@ class LineMessengerController extends Controller
 
         // LINEユーザーID指定
         // $userId = [config('services.line.user_id')];
-        $userId = [$user->line_id];
+        $userId = $user->line_id;
 
         // メッセージ設定
         $message = 'おはようございます。今日は燃えるゴミの日です。';
+        $quick_reply_messages = [
+            'type' => 'text',
+            'text' => '燃えるゴミの日を登録してください。',
+            'quickReply' => [
+                'items' => [
+                    [
+                        'type' => 'action',
+                        'action' => [
+                            'type' => 'message',
+                            'label' => 'Monday',
+                            'text' => '月曜日',
+                        ],
+                        'type' => 'action',
+                        'action' => [
+                            'type' => 'message',
+                            'label' => '火曜日',
+                            'text' => 'Tuesday',
+                        ],
+                    ]
+                ],
+            ],
+        ];
 
         // メッセージ送信
-        $textMessageBuilder = new TextMessageBuilder($message);
+        // $textMessageBuilder = new TextMessageBuilder($message);
+
+        $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\RawMessageBuilder($quick_reply_messages);
         // $response = $bot->pushMessage($userId, $textMessageBuilder);
-        $response = $bot->multicast($userId, $textMessageBuilder);
+        // $response = $bot->multicast($userId, $textMessageBuilder);
+        $response = $bot->replyMessage($userId, $textMessageBuilder);
+
         info('response', (array)$response);
         dd(
             $token,
