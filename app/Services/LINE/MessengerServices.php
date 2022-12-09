@@ -17,12 +17,12 @@ class MessengerServices
      * 返信用メッセージ：週選択
      * @var int
      */
-    const MESSAGE_WEEKS = 0;
+    private const MESSAGE_WEEKS = 0;
     /**
      * 返信用メッセージ：ごみ選択
      * @var int
      */
-    const MESSAGE_TRASH = 1;
+    private const MESSAGE_TRASH = 1;
 
     /** @var \LINE\LINEBot */
     private $bot;
@@ -49,14 +49,16 @@ class MessengerServices
         $reply_token = $request['replyToken'];
 
         $user_id = $request['source']['userId'];
-info('リクエスト', ['message' => $request_message]);
+        info('リクエスト', ['message' => $request_message]);
 
         switch ($request_message) {
             case '曜日とごみの種類を登録する':
                 $this->replySelectWeek($reply_token, $user_id);
+
                 break;
             case '登録内容を確認する':
                 $this->replyShowList($reply_token, $user_id);
+
                 break;
             default:
                 if (collect(['燃えるごみ', '燃えないごみ', 'プラごみ', '缶・ビン'])->contains($request_message)) {
@@ -64,6 +66,7 @@ info('リクエスト', ['message' => $request_message]);
                 } else {
                     $this->replySelectTrash($reply_token, $user_id);
                 }
+
                 break;
         }
     }
