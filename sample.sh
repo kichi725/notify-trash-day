@@ -4,7 +4,8 @@
 FILE=`git diff --staged --name-only --diff-filter=AM | grep -E '*.php$'`
 # php-cs-fixerによる自動整形
 # echo `vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --path-mode=intersection $FILE`
-echo `vendor/bin/php-cs-fixer fix`
+# echo `vendor/bin/php-cs-fixer fix`
+FIXED=`./vendor/bin/sail exec -T web ./vendor/bin/php-cs-fixer fix`
 
 echo "$FIXED"
 

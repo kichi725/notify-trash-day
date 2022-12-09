@@ -1,8 +1,5 @@
 <?php
 
-
-
-
 namespace App\Services\LINE;
 
 use LINE\LINEBot;
