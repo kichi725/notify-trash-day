@@ -62,7 +62,6 @@ class MessengerController extends Controller
     //     // LINEBOTSDKの設定
     //     $http_client = new CurlHTTPClient($token);
     //     $bot         = new LINEBot($http_client, ['channelSecret' => $secret]);
-
     //     $user = \App\Models\User::find(2);
 
     //     // LINEユーザーID指定

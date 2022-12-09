@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 FILE=`git diff --staged --name-only --diff-filter=AM | grep -E '*.php$'`
 
