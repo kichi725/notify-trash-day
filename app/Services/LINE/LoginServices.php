@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Services\LINE;
 
 use Illuminate\Support\Facades\Http;
@@ -22,13 +20,21 @@ class LoginServices
      */
     public function createCredentialUrl(): string
     {
-        $uri          = 'https://access.line.me/oauth2/v2.1/authorize';
-        $client_id    = config('services.line.client_id');
-        $redirect_uri = config('services.line.redirect');
-        $state        = $this->randomString();
-        $nonce        = $this->randomString();
+        $uri  = 'https://access.line.me/oauth2/v2.1/authorize';
+        $data = [
+            'response_type' => 'code',
+            'client_id'     => config('services.line.client_id'),
+            'redirect_uri'  => config('services.line.redirect'),
+            'state'         => $this->randomString(),
+            'scope'         => 'openid profile',
+            'prompt'        => 'cnsent',
+            'nonce'         => $this->randomString(),
+        ];
 
-        return "{$uri}?response_type=code&client_id={$client_id}&redirect_uri={$redirect_uri}&state={$state}&scope=openid%20profile&prompt=cnsent&nonce={$nonce}";
+        $query = http_build_query($data, '', null, PHP_QUERY_RFC3986);
+
+        return "{$uri}?{$query}";
+        // return "{$uri}?response_type=code&client_id={$client_id}&redirect_uri={$redirect_uri}&state={$state}&scope=openid%20profile&prompt=cnsent&nonce={$nonce}";
     }
 
     /**
@@ -49,9 +55,8 @@ class LoginServices
      */
     public function getAccessToken(string $code): string
     {
-        $uri = 'https://api.line.me/oauth2/v2.1/token';
-        $headers   = [ 'Content-Type: application/x-www-form-urlencoded' ];
-        $post_data = [
+        $uri  = 'https://api.line.me/oauth2/v2.1/token';
+        $data = [
           'grant_type'    => 'authorization_code',
           'code'          => $code,
           'redirect_uri'  => config('services.line.redirect'),
@@ -59,7 +64,8 @@ class LoginServices
           'client_secret' => config('services.line.client_secret'),
         ];
 
-        $response = Http::asForm()->post($uri, $post_data);
+        // 'Content-Type: application/x-www-form-urlencoded'で通信
+        $response = Http::asForm()->post($uri, $data);
 
         $content = json_decode($response->getBody()->getContents(), true);
 

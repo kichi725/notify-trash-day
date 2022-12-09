@@ -1,6 +1,5 @@
 <?php
 
-declare(strict_types=1);
 
 namespace App\Services\LINE;
 
@@ -9,98 +8,108 @@ use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 
 class MessengerServices
 {
-    public function message(array $inputs): void
+    /** @var \LINE\LINEBot */
+    private $bot;
+
+    public function __construct()
     {
-        // そこからtypeをとりだし、$message_typeに代入
-        $message_type=$inputs[0]['type'];
+        $http_client    = new CurlHTTPClient(config('services.line.channel_token'));
+        $channel_secret = ['channelSecret' => config('services.line.messenger_secret')];
 
+        $this->bot = new LINEBot($http_client, $channel_secret);
+    }
+
+    public function webhook(array $request): void
+    {
         // メッセージ内容を取得
-        $request_message = $inputs[0]['message']['text'];
-
+        $request_message = $request['message']['text'];
         // replyTokenを取得
-        $reply_token=$inputs[0]['replyToken'];
+        $reply_token = $request['replyToken'];
 
-        // LINEBOTSDKの設定
-        $http_client = new CurlHTTPClient(config('services.line.channel_token'));
-        $bot         = new LINEBot($http_client, ['channelSecret' => config('services.line.messenger_secret')]);
+        $user_id = $request['source']['userId'];
 
-        if ($request_message === 'store') {
-            $quick_reply_messages = [
-                'type'       => 'text',
-                'text'       => '燃えるゴミの日を登録してください。',
-                'quickReply' => [
-                    'items' => [
-                        [
-                            'type'   => 'action',
-                            'action' => [
-                                'type'  => 'message',
-                                'label' => '月曜日',
-                                'text'  => '月曜日',
-                            ],
-                        ],
-                        [
-                            'type'   => 'action',
-                            'action' => [
-                                'type'  => 'message',
-                                'label' => '火曜日',
-                                'text'  => '火曜日',
-                            ],
-                        ],
-                        [
-                            'type'   => 'action',
-                            'action' => [
-                                'type'  => 'message',
-                                'label' => '水曜日',
-                                'text'  => '水曜日',
-                            ],
-                        ],
-                        [
-                            'type'   => 'action',
-                            'action' => [
-                                'type'  => 'message',
-                                'label' => '木曜日',
-                                'text'  => '木曜日',
-                            ],
-                        ],
-                        [
-                            'type'   => 'action',
-                            'action' => [
-                                'type'  => 'message',
-                                'label' => '金曜日',
-                                'text'  => '金曜日',
-                            ],
-                        ],
-                        [
-                            'type'   => 'action',
-                            'action' => [
-                                'type'  => 'message',
-                                'label' => '土曜日',
-                                'text'  => '土曜日',
-                            ],
-                        ],
-                        [
-                            'type'   => 'action',
-                            'action' => [
-                                'type'  => 'message',
-                                'label' => '日曜日',
-                                'text'  => '日曜日',
-                            ],
-                        ],
-                    ],
+        switch ($request_message) {
+            case '登録する':
+                $this->selectWeek($reply_token, $user_id);
+
+                break;
+            case '確認する':
+                $this->showList($reply_token, $user_id);
+
+                break;
+            default:
+                $this->selectTrash($reply_token, $user_id);
+
+                break;
+        }
+    }
+
+    /**
+     * 通知日時の登録
+     *
+     * @param string $reply_token
+     * @return void
+     */
+    public function selectWeek(string $reply_token): void
+    {
+        $quick_reply_messages = $this->createQuickReplyMessages();
+
+        // dbアクセス必要
+
+        // クイックリプライ
+        $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\RawMessageBuilder($quick_reply_messages);
+        $response           = $this->bot->replyMessage($reply_token, $textMessageBuilder);
+    }
+
+    /**
+     * 通知日時リスト
+     *
+     * @param string $reply_token
+     * @return void
+     */
+    public function showList(string $reply_token): void
+    {
+        // DBアクセス必要
+        $reply_message = "ご登録頂いた日時です。\n月曜日: なし\n火曜日: 燃えるごみ";
+
+        $reply =$this->bot->replyText($reply_token, $reply_message);
+    }
+
+    public function selectTrash(string $reply_token, string $user_id): void
+    {
+    }
+
+    /**
+     * 通知日登録クイックリプライメッセージを作成
+     *
+     * @return array
+     */
+    public function createQuickReplyMessages(): array
+    {
+        return [
+            'type'       => 'text',
+            'text'       => '登録する曜日を選択してください',
+            'quickReply' => [
+                'items' => $this->getWeekItems(),
+            ],
+        ];
+    }
+
+    /**
+     * 曜日の選択肢を作成（クイックリプライで使用）
+     *
+     * @return array
+     */
+    public function getWeekItems(): array
+    {
+        return collect(['月', '火', '水', '木', '金', '土', '日'])
+            ->map(fn ($week) => [
+                'type'   => 'action',
+                'action' => [
+                    'type'  => 'message',
+                    'label' => $week,
+                    'text'  => $week,
                 ],
-            ];
-
-            // クイックリプライ
-            $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\RawMessageBuilder($quick_reply_messages);
-            $response           = $bot->replyMessage($reply_token, $textMessageBuilder);
-        }
-        if ($request_message === 'index') {
-            $reply_message = "ご登録頂いた日時です。\n月曜日: なし\n火曜日: 燃えるごみ";
-            $reply         =$bot->replyText($reply_token, $reply_message);
-        }
-        if ($request_message === 'update') {
-            $reply_message = 'どの曜日を変更しますか？';
-            $reply         =$bot->replyText($reply_token, $reply_message);
-        }
+            ])->all();
     }
 }
