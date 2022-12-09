@@ -9,7 +9,7 @@ FIXED=`./vendor/bin/sail exec -T web ./vendor/bin/php-cs-fixer fix --config=.php
 echo "$FIXED"
 
 # 整形されたファイルがあった場合、addする
-if [[ $FIXED =~ '1)' ]]
+if [ $FIXED =~ '1)' ]
 then
     echo 'ファイルが自動整形されました。コミットを中断します。自動整形されたファイルを確認してください。'
     git add .
