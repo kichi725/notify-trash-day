@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\LINE;
 
-interface LineMessengerRepositoryInterface
+interface MessengerRepositoryInterface
 {
     public function message(array $inputs): void;
 }

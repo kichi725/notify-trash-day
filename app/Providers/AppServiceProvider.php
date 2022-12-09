@@ -20,8 +20,8 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\LINE\LoginRepository::class,
         );
         $this->app->bind(
-            \App\Repositories\LINE\LineMessengerRepositoryInterface::class,
-            \App\Repositories\LINE\LineMessengerRepository::class,
+            \App\Repositories\LINE\MessengerRepositoryInterface::class,
+            \App\Repositories\LINE\MessengerRepository::class,
         );
     }
 

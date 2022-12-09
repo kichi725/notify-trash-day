@@ -6,9 +6,24 @@ namespace App\Services\LINE;
 
 use LINE\LINEBot;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
+use LINE\LINEBot\MessageBuilder\RawMessageBuilder;
 
+/**
+ * @package App\Services\LINE\
+ */
 class MessengerServices
 {
+    /**
+     * 返信用メッセージ：週選択
+     * @var int
+     */
+    const MESSAGE_WEEKS = 0;
+    /**
+     * 返信用メッセージ：ごみ選択
+     * @var int
+     */
+    const MESSAGE_TRASH = 1;
+
     /** @var \LINE\LINEBot */
     private $bot;
 
@@ -20,6 +35,12 @@ class MessengerServices
         $this->bot = new LINEBot($http_client, $channel_secret);
     }
 
+    /**
+     * 受信メッセージ別処理
+     *
+     * @param array $request
+     * @return void
+     */
     public function webhook(array $request): void
     {
         // メッセージ内容を取得
@@ -28,56 +49,60 @@ class MessengerServices
         $reply_token = $request['replyToken'];
 
         $user_id = $request['source']['userId'];
+info('リクエスト', ['message' => $request_message]);
 
         switch ($request_message) {
-            case '登録する':
-                $this->selectWeek($reply_token, $user_id);
-
+            case '曜日とごみの種類を登録する':
+                $this->replySelectWeek($reply_token, $user_id);
                 break;
-            case '確認する':
-                $this->showList($reply_token, $user_id);
-
+            case '登録内容を確認する':
+                $this->replyShowList($reply_token, $user_id);
                 break;
             default:
-                $this->selectTrash($reply_token, $user_id);
-
+                if (collect(['燃えるごみ', '燃えないごみ', 'プラごみ', '缶・ビン'])->contains($request_message)) {
+                    $this->bot->replyText($reply_token, '登録しました！');
+                } else {
+                    $this->replySelectTrash($reply_token, $user_id);
+                }
                 break;
         }
     }
 
     /**
-     * 通知日時の登録
+     * 通知曜日選択の返信
      *
      * @param string $reply_token
      * @return void
      */
-    public function selectWeek(string $reply_token): void
+    public function replySelectWeek(string $reply_token): void
     {
-        $quick_reply_messages = $this->createQuickReplyMessages();
+        // メッセージテンプレート取得
+        $templete = $this->createQuickReplyMessages(self::MESSAGE_WEEKS);
 
         // dbアクセス必要
 
         // クイックリプライ
-        $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\RawMessageBuilder($quick_reply_messages);
-        $response           = $this->bot->replyMessage($reply_token, $textMessageBuilder);
+        $reply_message = new RawMessageBuilder($templete);
+        $this->bot->replyMessage($reply_token, $reply_message);
     }
 
     /**
-     * 通知日時リスト
+     * 通知するごみの種類を選択
      *
      * @param string $reply_token
+     * @param string $user_id
      * @return void
      */
-    public function showList(string $reply_token): void
+    public function replySelectTrash(string $reply_token, string $user_id): void
     {
-        // DBアクセス必要
-        $reply_message = "ご登録頂いた日時です。\n月曜日: なし\n火曜日: 燃えるごみ";
+        // メッセージテンプレート取得
+        $templete = $this->createQuickReplyMessages(self::MESSAGE_TRASH);
 
-        $reply =$this->bot->replyText($reply_token, $reply_message);
-    }
+        // dbアクセス必要
 
-    public function selectTrash(string $reply_token, string $user_id): void
-    {
+        // クイックリプライ
+        $reply_message = new RawMessageBuilder($templete);
+        $this->bot->replyMessage($reply_token, $reply_message);
     }
 
     /**
@@ -85,13 +110,18 @@ class MessengerServices
      *
      * @return array
      */
-    public function createQuickReplyMessages(): array
+    public function createQuickReplyMessages(int $type): array
     {
+        $text = [
+            '登録する曜日を選択してください',
+            'ごみの種類を選択してください',
+        ];
+
         return [
             'type'       => 'text',
-            'text'       => '登録する曜日を選択してください',
+            'text'       => $text[$type],
             'quickReply' => [
-                'items' => $this->getWeekItems(),
+                'items' => $this->getItems($type),
             ],
         ];
     }
@@ -101,16 +131,35 @@ class MessengerServices
      *
      * @return array
      */
-    public function getWeekItems(): array
+    public function getItems(int $type): array
     {
-        return collect(['月', '火', '水', '木', '金', '土', '日'])
-            ->map(fn ($week) => [
-                'type'   => 'action',
-                'action' => [
-                    'type'  => 'message',
-                    'label' => $week,
-                    'text'  => $week,
-                ],
-            ])->all();
+        $items = [
+            ['月', '火', '水', '木', '金', '土', '日'],
+            ['燃えるごみ', '燃えないごみ', 'プラごみ', '缶・ビン'],
+        ];
+
+        return collect($items[$type])
+        ->map(fn ($item) => [
+            'type'   => 'action',
+            'action' => [
+                'type'  => 'message',
+                'label' => $item,
+                'text'  => $item,
+            ],
+        ])->all();
+    }
+
+    /**
+     * 通知曜日リスト
+     *
+     * @param string $reply_token
+     * @return void
+     */
+    public function replyShowList(string $reply_token): void
+    {
+        // DBアクセス必要
+        $reply_message = "ご登録頂いた日時です。\n月曜日: なし\n火曜日: 燃えるごみ\n水曜日: 燃えるごみ\n木曜日: なし\n金曜日: 燃えるごみ\n土曜日: 燃えるごみ\n日曜日: 燃えるごみ";
+
+        $this->bot->replyText($reply_token, $reply_message);
     }
 }
