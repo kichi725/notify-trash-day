@@ -12,14 +12,13 @@ return new class () extends Migration {
      *
      * @return void
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('users', function (Blueprint $table): void {
-            $table->id();
-            $table->string('name');
-            $table->string('user_id');
-            $table->timestamps();
-            $table->softDeletes();
+        Schema::create('trash', function (Blueprint $table) {
+            // $table->id();
+            // $table->timestamps();
+            $table->string('code', 2);
+            $table->string('name', 10);
         });
     }
 
@@ -28,8 +27,8 @@ return new class () extends Migration {
      *
      * @return void
      */
-    public function down(): void
+    public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('trash');
     }
 };

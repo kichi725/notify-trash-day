@@ -14,12 +14,12 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table): void {
+        Schema::create('temporaries', function (Blueprint $table): void {
             $table->id();
-            $table->string('name');
-            $table->string('user_id');
+            $table->string('user_id', 100);
+            $table->string('content', 255);
+            $table->timestamp('expired_at');
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -30,6 +30,6 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('temporaries');
     }
 };

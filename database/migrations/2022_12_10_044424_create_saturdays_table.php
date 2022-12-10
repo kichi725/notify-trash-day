@@ -12,12 +12,12 @@ return new class () extends Migration {
      *
      * @return void
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('users', function (Blueprint $table): void {
+        Schema::create('saturdays', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('user_id');
+            $table->foreignId('user_id')->constrained('users');
+            $table->string('trash', 2);
             $table->timestamps();
             $table->softDeletes();
         });
@@ -28,8 +28,8 @@ return new class () extends Migration {
      *
      * @return void
      */
-    public function down(): void
+    public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('saturdays');
     }
 };

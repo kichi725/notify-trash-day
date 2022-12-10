@@ -24,9 +24,14 @@ class MessengerServices
      */
     private const MESSAGE_TRASH = 1;
 
-    /** @var \LINE\LINEBot */
+    /**
+     * @var \LINE\LINEBot
+     */
     private $bot;
 
+    /**
+     * @return void
+     */
     public function __construct()
     {
         $http_client    = new CurlHTTPClient(config('services.line.channel_token'));
@@ -62,6 +67,9 @@ class MessengerServices
                 break;
             default:
                 if (collect(['燃えるごみ', '燃えないごみ', 'プラごみ', '缶・ビン'])->contains($request_message)) {
+                    // dbアクセス必要
+                    // user_id, 有効期限, 選択された曜日をDBから取得
+                    // 通知設定テーブルに保存
                     $this->bot->replyText($reply_token, '登録しました！');
                 } else {
                     $this->replySelectTrash($reply_token, $user_id);
@@ -82,7 +90,7 @@ class MessengerServices
         // メッセージテンプレート取得
         $templete = $this->createQuickReplyMessages(self::MESSAGE_WEEKS);
 
-        // dbアクセス必要
+        // dbアクセス必要 <- いるか?
 
         // クイックリプライ
         $reply_message = new RawMessageBuilder($templete);
@@ -102,6 +110,7 @@ class MessengerServices
         $templete = $this->createQuickReplyMessages(self::MESSAGE_TRASH);
 
         // dbアクセス必要
+        // user_id, 有効期限, 選択された曜日をDBに保存
 
         // クイックリプライ
         $reply_message = new RawMessageBuilder($templete);
