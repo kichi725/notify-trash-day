@@ -71,6 +71,7 @@ class MessengerServices
                     // dbアクセス必要
                     // user_id, 有効期限, 選択された曜日をDBから取得
                     // 通知設定テーブルに保存
+                    $this->repository->storeNotify($user_id, $request_message);
                     $this->bot->replyText($reply_token, '登録しました！');
                 } else {
                     $this->replySelectTrash($reply_token, $request_message, $user_id);

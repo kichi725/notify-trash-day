@@ -15,5 +15,12 @@ interface MessengerRepositoryInterface
      */
     public function getList(string $user_id): \App\Models\Users\User;
 
+    /**
+     * @param string $user_id
+     * @param string $message
+     * @return void
+     */
     public function tempMessage(string $user_id, string $message): void;
+
+    public function storeNotify(string $user_id, string $message): void;
 }

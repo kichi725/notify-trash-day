@@ -6,6 +6,7 @@ namespace App\Repositories\LINE;
 
 use App\Models\Temporaries\Temporary;
 use App\Models\Users\User;
+use App\Models\Weeks\Monday;
 
 /**
  * @package \App\Repositories\LINE
@@ -47,5 +48,32 @@ class MessengerRepository implements MessengerRepositoryInterface
             'content'    => $message,
             'expired_at' => now()->addMinute(), // 有効期限1分
         ]);
+    }
+
+    public function storeNotify($user_id, $request_message): void
+    {
+        $week = $this->getTempWeek($user_id);
+
+        Monday::updateOrCreate([
+            'user_id' => $user_id,
+            'trash'   => $request_message,
+        ]);
+    }
+
+    /**
+     * @param string $user_id
+     * @throws \Exception
+     * @return string
+     */
+    public function getTempWeek(string $user_id): string
+    {
+        // 一時保存の曜日を取得
+        $week = Temporary::whereUserId($user_id)
+            ->where('expired_at', '>', now())
+            ->first(['content']);
+
+        throw_if(is_null($week), \Exception::class, 'Error');
+
+        return $week['content'];
     }
 }
