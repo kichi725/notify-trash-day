@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Http\Controllers\LINE\LoginController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,5 +16,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', fn () => view('welcome'));
-Route::get('/sample', fn () => view('sample'));
+Route::get('/', fn () => view('welcome'))->name('top');
+Route::get('/sample', fn () => view('sample'))->middleware('guest');
+// Route::get('/home', fn () => view('login'))->middleware('auth');
+Route::get('login', [LoginController::class, 'credential'])->name('line.login');

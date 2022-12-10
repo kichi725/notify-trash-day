@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
@@ -11,9 +13,16 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
-        //
+        $this->app->bind(
+            \App\Repositories\LINE\LoginRepositoryInterface::class,
+            \App\Repositories\LINE\LoginRepository::class,
+        );
+        $this->app->bind(
+            \App\Repositories\LINE\MessengerRepositoryInterface::class,
+            \App\Repositories\LINE\MessengerRepository::class,
+        );
     }
 
     /**
@@ -21,8 +30,7 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        //
     }
 }
