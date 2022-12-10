@@ -32,8 +32,9 @@ class MessengerServices
     /**
      * @return void
      */
-    public function __construct()
-    {
+    public function __construct(
+        private \App\Repositories\LINE\MessengerRepositoryInterface $repository
+    ) {
         $http_client    = new CurlHTTPClient(config('services.line.channel_token'));
         $channel_secret = ['channelSecret' => config('services.line.messenger_secret')];
 
@@ -66,13 +67,13 @@ class MessengerServices
 
                 break;
             default:
-                if (collect(['燃えるごみ', '燃えないごみ', 'プラごみ', '缶・ビン'])->contains($request_message)) {
+                if (collect(['燃えるごみ', '燃えないごみ', '資源ごみ', '缶・ビン'])->contains($request_message)) {
                     // dbアクセス必要
                     // user_id, 有効期限, 選択された曜日をDBから取得
                     // 通知設定テーブルに保存
                     $this->bot->replyText($reply_token, '登録しました！');
                 } else {
-                    $this->replySelectTrash($reply_token, $user_id);
+                    $this->replySelectTrash($reply_token, $request_message, $user_id);
                 }
 
                 break;
@@ -104,13 +105,14 @@ class MessengerServices
      * @param string $user_id
      * @return void
      */
-    public function replySelectTrash(string $reply_token, string $user_id): void
+    public function replySelectTrash(string $reply_token, string $request_message, string $user_id): void
     {
         // メッセージテンプレート取得
         $templete = $this->createQuickReplyMessages(self::MESSAGE_TRASH);
 
         // dbアクセス必要
         // user_id, 有効期限, 選択された曜日をDBに保存
+        $this->repository->tempMessage($user_id, $request_message);
 
         // クイックリプライ
         $reply_message = new RawMessageBuilder($templete);
@@ -147,7 +149,7 @@ class MessengerServices
     {
         $items = [
             ['月', '火', '水', '木', '金', '土', '日'],
-            ['燃えるごみ', '燃えないごみ', 'プラごみ', '缶・ビン'],
+            ['燃えるごみ', '燃えないごみ', '資源ごみ', '缶・ビン'],
         ];
 
         return collect($items[$type])
@@ -167,10 +169,20 @@ class MessengerServices
      * @param string $reply_token
      * @return void
      */
-    public function replyShowList(string $reply_token): void
+    public function replyShowList(string $reply_token, string $user_id): void
     {
         // DBアクセス必要
-        $reply_message = "ご登録頂いた日時です。\n月曜日: なし\n火曜日: 燃えるごみ\n水曜日: 燃えるごみ\n木曜日: なし\n金曜日: 燃えるごみ\n土曜日: 燃えるごみ\n日曜日: 燃えるごみ";
+        $list          = $this->repository->getList($user_id);
+        $reply_message = <<<EOM
+        ご登録頂いた日時です。
+        月曜日: {$list['monday']['trash']}
+        火曜日: {$list['tuesday']['trash']}
+        水曜日: {$list['wednesday']['trash']}
+        木曜日: {$list['thursday']['trash']}
+        金曜日: {$list['friday']['trash']}
+        土曜日: {$list['saturday']['trash']}
+        日曜日: {$list['sunday']['trash']}
+        EOM;
 
         $this->bot->replyText($reply_token, $reply_message);
     }

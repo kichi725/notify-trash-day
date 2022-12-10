@@ -14,9 +14,9 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::create('modays', function (Blueprint $table): void {
+        Schema::create('thursdays', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
+            $table->string('user_id', 100);
             $table->string('trash', 2);
             $table->timestamps();
             $table->softDeletes();
@@ -30,6 +30,6 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('modays');
+        Schema::dropIfExists('thursdays');
     }
 };

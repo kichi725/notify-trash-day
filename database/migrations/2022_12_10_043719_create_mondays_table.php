@@ -12,11 +12,11 @@ return new class () extends Migration {
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('sandays', function (Blueprint $table) {
+        Schema::create('mondays', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
+            $table->string('user_id', 100);
             $table->string('trash', 2);
             $table->timestamps();
             $table->softDeletes();
@@ -28,8 +28,8 @@ return new class () extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('sandays');
+        Schema::dropIfExists('mondays');
     }
 };
