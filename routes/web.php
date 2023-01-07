@@ -20,3 +20,6 @@ Route::get('/', fn () => view('welcome'))->name('top');
 Route::get('/sample', fn () => view('sample'))->middleware('guest');
 // Route::get('/home', fn () => view('login'))->middleware('auth');
 Route::get('login', [LoginController::class, 'credential'])->name('line.login');
+
+Route::get('di', fn () => view('test-di'))->name('di');
+Route::post('di', [\App\Http\Controllers\LINE\MessengerController::class, 'di']);

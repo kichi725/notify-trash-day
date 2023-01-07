@@ -23,6 +23,19 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\LINE\MessengerRepositoryInterface::class,
             \App\Repositories\LINE\MessengerRepository::class,
         );
+
+        $this->app->bind(
+            \App\Services\MessengerInterface::class,
+            function ($app) {
+                if ($app->request->message === 'quick') {
+                    return new \App\Services\Reply\QuickReply();
+                }
+                if ($app->request->message === 'text') {
+                    return new \App\Services\Reply\TextReply();
+                }
+                dd($app->request->message);
+            },
+        );
     }
 
     /**

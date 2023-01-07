@@ -109,4 +109,11 @@ class MessengerController extends Controller
     //         $response
     //     );
     // }
+
+    // public function di(Request $request)
+    public function di(\App\Services\MessengerInterface $interface)
+    {
+        // dd($request->input());
+        dd($interface->message());
+    }
 }
