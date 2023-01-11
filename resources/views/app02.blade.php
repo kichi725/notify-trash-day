@@ -1,5 +1,9 @@
 <x-base>
-    <h2>Vue Practice02</h2>
+    <x-slot:style>
+        @vite(['resources/css/customize.scss'])
+    </x-slot:style>
+
+    <h2 class="app02-h2">Vue <span>Practice02</span></h2>
 
     <button-vue class="btn-danger" />
 </x-base>
